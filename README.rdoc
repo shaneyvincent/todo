@@ -1,28 +1,231 @@
-== README
+WELCOME TO SHANEYS HOMEWORK HELP
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Let's Scaffold! Closed
+Make sure you have rails installed:
 
-Things you may want to cover:
+gem install rails
+This assignment is going to walk you through all the code Rails generates for us with a scaffold. This is the first exposure we have to Rails code, so treat it like a guided tour. We’re going to see a lot of new things, but there’s no expectation for you to be able to do anything with them just yet!
 
-* Ruby version
+Here’s the deal: You just received an urgent email from the project manager at a company you work for. You need to create a Rails app by tomorrow!
 
-* System dependencies
+Well that sucks.
 
-* Configuration
+At this point, hypothetically, you’re probably running to a senior dev to ask from some help creating a new webapp in one day. Let’s pretend that’s me (Ed).
 
-* Database creation
+So… how hard can it be to create a website in Rails? If someone asked you to create a complete To­do­ List web application, including HTML, CSS, Ruby, and a database, how much time would you quote them?
 
-* Database initialization
+A week? Two weeks?
 
-* How to run the test suite
+We’ve got two hours. Let’s go.
 
-* Services (job queues, cache servers, search engines, etc.)
+Start a new Rails app.
 
-* Deployment instructions
+# In your terminal
+rails new todo
+cd todo
+What we need to create is called a scaffold. What’s that?
 
-* ...
+rails g scaffold
 
+Usage:
 
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+rails generate scaffold NAME [field[:type][:index] field[:type][:index]] [options]
+Description:
+
+Scaffolds an entire resource, from model and migration to controller and views, along with a full test suite. The resource is ready to use as a starting point for your RESTful, resource­oriented application.
+
+This sounds like exactly what we need. A whole webapp, model, migration, controller, and views all in one command.
+
+You should have already defined what you want your ToDo list items to look like. I’m going to assume something simple, but you should use what you’ve already worked on.
+
+First, I want a ToDo list item. It should have a description.
+
+# In your terminal
+rails g scaffold todo_item description:string --javascript-engine=js --stylesheet-engine=css
+
+# Output:
+invoke active_record
+create db/migrate/20140609114024_create_todo_items.rb
+create app/models/todo_item.rb
+invoke test_unit
+create test/models/todo_item_test.rb
+create test/fixtures/todo_items.yml
+invoke resource_route
+route resources :todo_items
+invoke scaffold_controller
+create app/controllers/todo_items_controller.rb
+invoke erb
+create app/views/todo_items
+create app/views/todo_items/index.html.erb
+create app/views/todo_items/edit.html.erb
+create app/views/todo_items/show.html.erb
+create app/views/todo_items/new.html.erb
+create app/views/todo_items/_form.html.erb
+invoke test_unit
+create test/controllers/todo_items_controller_test.rb
+invoke helper
+create app/helpers/todo_items_helper.rb
+invoke test_unit
+create test/helpers/todo_items_helper_test.rb
+invoke jbuilder
+create app/views/todo_items/index.json.jbuilder
+create app/views/todo_items/show.json.jbuilder
+invoke assets
+invoke js
+create app/assets/javascripts/todo_items.js
+invoke css
+create app/assets/stylesheets/todo_items.css
+invoke css
+create app/assets/stylesheets/scaffold.css
+By default Rails prefers that I use CoffeeScript/SCSS, but we haven’t learned that yet, so we told Rails to scaffold some plain JavaScript/CSS for us instead (via the options).
+
+Other than those strange options, this generator looks a lot like the command we used to generate a model, only it creates a whole bunch of stuff.
+
+Rails made a complete web app for me, with multiple pages and links. For example,
+
+I can create a new todo.
+I can see a list of my todos.
+I can view (aka show), edit, and destroy (aka delete) my todos.
+Let’s check the migration.
+
+# db/migrate/20140609114024_create_todo_items.rb
+
+class CreateTodoItems < ActiveRecord::Migration
+  def change
+    create_table :todo_items do |t|
+      t.string :description
+      t.timestamps
+    end
+  end
+end
+This makes sense. Let’s run this.
+
+# In terminal:
+rake db:migrate
+
+# Output:
+== 20140609114024 CreateTodoItems: migrating ==================================
+
+­­ create_table(:todo_items)
+
+­> 0.0013s
+
+== 20140609114024 CreateTodoItems: migrated (0.0013s) =========================
+Looks like it did the right thing.
+
+When I load up my server (with rails s), I should see my default homepage.
+
+Where’s my scaffold located? Let’s check the routes.
+
+Routes
+Your “routes” explain how the url paths map to different functionalities in your app. Think of them like a map with instructions of where any given request should go.
+
+The scaffold generator added a route for me. But it’s a weird one. We’re used to seing routes like get '/', but this one just says “resources”.
+
+# In config/routes.rb
+Rails.application.routes.draw do
+  resources :todo_items
+end
+What’s that? Let’s find out. Rails gives us the ability to inspect all of our applications routes in the terminal:
+
+# In Terminal:
+rake routes
+The rake routes task shows me a list of all the routes defined in my config/routes.rb. I get a lot of stuff from that one line of code. Here’s an example of the output:
+
+Prefix	Verb	URI Pattern	Controller#Action
+todo_items	GET	/todo_items(.:format)	todo_items#index
+new_todo_item	GET	/todo_items/new(.:format)	todo_items#new
+edit_todo_item	GET	/todo_items/:id/edit(.:format)	todo_items#edit
+POST	/todo_items(.:format)	todo_items#create
+todo_item	GET	/todo_items/:id(.:format)	todo_items#show
+PATCH	/todo_items/:id(.:format)	todo_items#update
+PUT	/todo_items/:id(.:format)	todo_items#update
+DELETE	/todo_items/:id(.:format)	todo_items#destroy
+The first column in this table represents a nicknape we can use to refer to this route throughout our rails app. For example, new_todo_item_url would return localhost:8000/todo_items/new.
+
+The second column represents the HTTP method this route applies to.
+
+The third column represents the url path this route applies to. (note that anything beginning with a colon is actually stored as a parameter in the params hash we learned about yesterday.)
+
+The fourth column represents what controller this route… routes to. The action is simply the method on that controller that is called.
+
+What resources does is define a RESTful resource. It automatically creates a set of routes that are often used. Just like we learned, a RESTful resource follows a particular pattern:
+
+GET /todo_items => Gets the list of all todos.
+GET /todo_items/:id => Gets a single todo.
+POST /todo_items => Creates a new todo.
+PUT (or PATCH) /todo_items/:id => Updates a single todo.
+DELETE /todo_items/:id => Deletes a single todo.
+All this and more are generated for free by declaring that a TodoItem is a “resource” thanks to scaffolding.
+
+Controllers
+The controller that Rails generated for me is pretty impressive. I’m not going to copy­ and­ paste it all here, but check it out yourself. Open app/controllers/todo_items_controller.rb. There are index, show, new, edit, create, update, and destroy methods (called “actions”). There are private methods (at the bottom). There’s even a before_action at the top:
+
+before_action :set_todo_item, only: [:show, :edit, :update, :destroy]
+before_action tells Rails to run the private set_todo_item method before running any of the actions listed. And all that method does is set an instance variable (@todo_item). Recall that instance variables are accessible anywhere inside this class (this controller).
+
+In fact, most of these methods just set instance variables: index, show, new, edit
+
+The bigger methods (create, update, destroy) all do one thing, then use a big respond_to to render HTML or JSON. That means people can access my lists like an api: By adding “.json” to the end of my URL, I can get a JSON version of my todo list.
+
+Each of your controller actions need something to return to the browser that made the request.
+
+Views
+Rails uses templates as the View part of Model View Controller. These templates define the HTML that rails will build in your response.
+
+Where are all these views defined? In the views folder of course.
+
+# In terminal
+ls app/views/todo_items/
+
+# Output:
+_form.html.erb index.html.erb new.html.erb show.json.jbuilder
+edit.html.erb index.json.jbuilder show.html.erb
+There’s a view for each controller action that needs it: index, new, show, and edit. Some actions (index and show) have two views, one for HTML and another for JSON. That means I can get JSON for all my todos (index) or a single todo (show).
+
+Let’s take a look at one of the views.
+
+# app/views/todo_items/show.html.erb
+
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Description:</strong>
+  <%= @todo_item.description %>
+</p>
+
+<%= link_to 'Edit', edit_todo_item_path(@todo_item) %> |
+<%= link_to 'Back', todo_items_path %>
+All the code I need to show a single todo_item is in the show view. It’s written in HTML, but some of the tags look weird. That’s because this file is in ERB format. All the tags that start and end with % contain Ruby code.
+
+This Ruby code uses the variables I set in my controller actions.
+
+The show controller action only does this:
+
+@todo_item = TodoItem.find(params[:id])
+That same instance variable (@todo_item) appears in the corresponding view. The interaction between the controller and the view is as simple as that. The controller sets some instance variables (variables that begin with @), and the view uses them.
+
+This works great, but it’s kinda ugly. Where do I set my CSS?
+
+If I view the source of the scaffold HTML pages, I can see that it imports a todo_items.css on every page. Where are those located?
+
+In the app/assets folder.
+
+# In Terminal
+ls app/assets/stylesheets/
+
+# Output:
+application.css scaffold.css todo_items.css
+todo_items.css is where I put all the CSS for any views related to my TodoItems controller. It’s blank. I can start writing CSS code right there if I wanted to!
+
+There’s a lot going on here that we haven’t explained to you yet. Rails has generated a lot of code for us. But it’s working code, which gives you a chance to tinker. We want you to tinker on this project.
+
+If you need to write CSS, you know where that goes. If you want to write Ruby, you’ve got two options: the controller or the model. We’ll talk about the difference between those two later.
+
+Just pick one.
+
+Note the routes. index, show, new, and edit correspond to actual HTML pages. They each have associated views. And the controller actions just define variables that are used in those views. create, update, and destroy correspond to activities. They execute Ruby code, then redirect to one of the 4 HTML pages above.
+
+The point of this exercise is to demonstrate that, if you think about your models (building blocks, in our case we only needed a todo item) Rails can automatically generate a sample website for you. Then, all you have to do is make some adjustments to get a demo working.
+
+Explore this app. Change the text displayed in your views, add some css, and take a close look at the different files we’ve defined here. Create a repo for this app, get it on GitHub, and send us the link!
